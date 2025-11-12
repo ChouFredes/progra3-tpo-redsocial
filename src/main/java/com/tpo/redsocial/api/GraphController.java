@@ -107,17 +107,6 @@ public class GraphController {
         return out;
     }
 
-    // En GraphController (o en un Utils), dejá AMBOS helpers:
-
-    private static Map<String,List<ShortestAndMst.Edge>> convertToShortest(
-            Map<String,List<com.tpo.redsocial.service.GraphService.Edge>> src){
-        Map<String,List<ShortestAndMst.Edge>> out = new HashMap<>();
-        src.forEach((k,v) -> out.put(k, v.stream()
-            .map(e -> new ShortestAndMst.Edge(e.to(), e.w()))
-            .toList()));
-        return out;
-    }
-
     private static Map<String,List<FloydWarshall.Edge>> convertToFloyd(
             Map<String,List<com.tpo.redsocial.service.GraphService.Edge>> src){
         Map<String,List<FloydWarshall.Edge>> out = new HashMap<>();
