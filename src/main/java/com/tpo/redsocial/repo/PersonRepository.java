@@ -15,4 +15,15 @@ public interface PersonRepository extends Neo4jRepository<Person, String> {
     """)
     List<Person> findDirectFriends(String id);
 
+    // NUEVO: todas las aristas (tratamos FRIEND como no dirigido)
+    @Query("""
+        MATCH (p:Person)-[:FRIEND]-(f:Person)
+        RETURN DISTINCT p.id AS u, f.id AS v
+    """)
+    List<EdgePair> fetchAllEdges();
+
+    // NUEVO: todos los ids de nodos (útil para DP/Floyd)
+    @Query("MATCH (p:Person) RETURN p.id")
+    List<String> findAllIds();
+
 }
