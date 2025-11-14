@@ -1,4 +1,4 @@
-package com.tpo.redsocial.domain;
+package com.tpo.redsocial.model;
 
 import java.util.Set;
 

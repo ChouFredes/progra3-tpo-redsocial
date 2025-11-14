@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tpo.redsocial.domain.Person;
+import com.tpo.redsocial.model.Person;
 import com.tpo.redsocial.repo.PersonRepository;
 
 import lombok.RequiredArgsConstructor;

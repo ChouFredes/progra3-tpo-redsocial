@@ -1,91 +1,132 @@
-// src/main/java/com/tpo/redsocial/algorithms/ShortestAndMst.java
 package com.tpo.redsocial.algorithms;
 
+import com.tpo.redsocial.model.Edge;
 import java.util.*;
 
 public class ShortestAndMst {
-    public static Map<String,Double> dijkstra(Map<String,List<Edge>> g, String s){
-        Map<String,Double> dist=new HashMap<>();
-        for (String v: g.keySet()) dist.put(v, Double.POSITIVE_INFINITY);
-        if (!g.containsKey(s)) return dist;
-        dist.put(s,0.0);
-        PriorityQueue<Node> pq=new PriorityQueue<>(Comparator.comparingDouble(n->n.d));
-        pq.add(new Node(s,0));
-        while(!pq.isEmpty()){
-            var cur=pq.poll();
-            if (cur.d!=dist.get(cur.id)) continue;
-            for (Edge e: g.get(cur.id)){
-                double nd=cur.d+e.w();
-                if (nd<dist.get(e.to())){
-                    dist.put(e.to(), nd);
-                    pq.add(new Node(e.to(), nd));
+    
+    // Dijkstra's Algorithm - ahora usa la clase Edge común
+    public static Map<String, Double> dijkstra(Map<String, List<Edge>> graph, String start) {
+        Map<String, Double> distances = new HashMap<>();
+        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparingDouble(Edge::weight));
+        
+        // Inicializar distancias
+        for (String node : graph.keySet()) {
+            distances.put(node, Double.MAX_VALUE);
+        }
+        distances.put(start, 0.0);
+        pq.offer(new Edge(start, 0.0));
+        
+        while (!pq.isEmpty()) {
+            Edge current = pq.poll();
+            String u = current.to();
+            double distU = current.weight();
+            
+            if (distU > distances.get(u)) continue;
+            
+            for (Edge edge : graph.getOrDefault(u, Collections.emptyList())) {
+                String v = edge.to();
+                double weight = edge.weight();
+                double newDist = distU + weight;
+                
+                if (newDist < distances.get(v)) {
+                    distances.put(v, newDist);
+                    pq.offer(new Edge(v, newDist));
                 }
             }
         }
-        return dist;
+        
+        return distances;
     }
-
-    // Prim (MST) sobre grafo no dirigido
-    public static List<UEdge> prim(Map<String,List<Edge>> g, String start){
-        List<UEdge> mst=new ArrayList<>();
-        if (!g.containsKey(start)) return mst;
-        Set<String> vis=new HashSet<>();
-        PriorityQueue<UEdge> pq=new PriorityQueue<>(Comparator.comparingDouble(UEdge::w));
-        vis.add(start);
-        for (Edge e: g.get(start)) pq.add(new UEdge(start,e.to(),e.w()));
-        while(!pq.isEmpty()){
-            var e=pq.poll();
-            boolean uIn=vis.contains(e.u()), vIn=vis.contains(e.v());
-            if (uIn && vIn) continue;
-            String nxt = uIn? e.v(): e.u();
-            mst.add(e); vis.add(nxt);
-            for (Edge ne: g.getOrDefault(nxt, List.of()))
-                pq.add(new UEdge(nxt, ne.to(), ne.w()));
+    
+    // Prim's Algorithm - usa la clase Edge común
+    public static List<UEdge> prim(Map<String, List<Edge>> graph, String start) {
+        List<UEdge> mst = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        PriorityQueue<UEdge> pq = new PriorityQueue<>(Comparator.comparingDouble(UEdge::w));
+        
+        visited.add(start);
+        for (Edge edge : graph.getOrDefault(start, Collections.emptyList())) {
+            pq.offer(new UEdge(start, edge.to(), edge.weight()));
         }
+        
+        while (!pq.isEmpty() && visited.size() < graph.size()) {
+            UEdge current = pq.poll();
+            if (visited.contains(current.v())) continue;
+            
+            mst.add(current);
+            visited.add(current.v());
+            
+            for (Edge edge : graph.getOrDefault(current.v(), Collections.emptyList())) {
+                if (!visited.contains(edge.to())) {
+                    pq.offer(new UEdge(current.v(), edge.to(), edge.weight()));
+                }
+            }
+        }
+        
         return mst;
     }
-
-    // Kruskal (MST)
-    public static List<UEdge> kruskal(Set<UEdge> edges, Set<String> nodes){
-        DSU dsu=new DSU(nodes);
-        List<UEdge> res=new ArrayList<>();
-        edges.stream().sorted(Comparator.comparingDouble(UEdge::w)).forEach(e->{
-            if (dsu.union(e.u(), e.v())) res.add(e);
-        });
-        return res;
-    }
-
-    public record Edge(String to, double w){}
-    public record UEdge(String u, String v, double w){}
-    private static class DSU {
-    Map<String, String> p = new HashMap<>();
-    Map<String, Integer> r = new HashMap<>();
-
-    DSU(Set<String> nodes){
-        for (String x : nodes) { p.put(x, x); r.put(x, 0); }
-    }
-
-    String find(String x){
-        String px = p.get(x);
-        if (px == null) { // por si llega un nodo que no estaba
-            p.put(x, x); r.putIfAbsent(x, 0);
-            return x;
+    
+    // Kruskal's Algorithm - se mantiene igual
+    public static List<UEdge> kruskal(Set<UEdge> edges, Set<String> nodes) {
+        List<UEdge> mst = new ArrayList<>();
+        UnionFind uf = new UnionFind(nodes);
+        
+        List<UEdge> sortedEdges = new ArrayList<>(edges);
+        sortedEdges.sort(Comparator.comparingDouble(UEdge::w));
+        
+        for (UEdge edge : sortedEdges) {
+            if (uf.union(edge.u(), edge.v())) {
+                mst.add(edge);
+            }
         }
-        if (px.equals(x)) return x;
-        String root = find(px);
-        p.put(x, root);      // path compression
-        return root;
+        
+        return mst;
     }
-
-    boolean union(String a, String b){
-        a = find(a); b = find(b);
-        if (a.equals(b)) return false;
-        int ra = r.get(a), rb = r.get(b);
-        if (ra < rb) { String t = a; a = b; b = t; }
-        p.put(b, a);
-        if (ra == rb) r.put(a, ra + 1);
-        return true;
+    
+    // Record para edges no dirigidos (solo para Prim y Kruskal)
+    public record UEdge(String u, String v, double w) {
+        @Override
+        public String toString() {
+            return String.format("UEdge{u='%s', v='%s', w=%.1f}", u, v, w);
+        }
     }
-}
-    private record Node(String id,double d){}
+    
+    // Union-Find para Kruskal (se mantiene igual)
+    static class UnionFind {
+        private Map<String, String> parent = new HashMap<>();
+        private Map<String, Integer> rank = new HashMap<>();
+        
+        public UnionFind(Set<String> nodes) {
+            for (String node : nodes) {
+                parent.put(node, node);
+                rank.put(node, 0);
+            }
+        }
+        
+        public String find(String x) {
+            if (!parent.get(x).equals(x)) {
+                parent.put(x, find(parent.get(x)));
+            }
+            return parent.get(x);
+        }
+        
+        public boolean union(String x, String y) {
+            String rootX = find(x);
+            String rootY = find(y);
+            
+            if (rootX.equals(rootY)) return false;
+            
+            if (rank.get(rootX) < rank.get(rootY)) {
+                parent.put(rootX, rootY);
+            } else if (rank.get(rootX) > rank.get(rootY)) {
+                parent.put(rootY, rootX);
+            } else {
+                parent.put(rootY, rootX);
+                rank.put(rootX, rank.get(rootX) + 1);
+            }
+            
+            return true;
+        }
+    }
 }

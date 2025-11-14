@@ -1,41 +1,72 @@
-// src/main/java/com/tpo/redsocial/service/GraphService.java
 package com.tpo.redsocial.service;
 
+import com.tpo.redsocial.dto.EdgeDTO;
+import com.tpo.redsocial.model.Edge;
 import com.tpo.redsocial.repo.PersonRepository;
-import com.tpo.redsocial.repo.EdgePair;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 public class GraphService {
 
     private final PersonRepository repo;
+    
+    public GraphService(PersonRepository repo) {
+        this.repo = repo;
+    }
 
-    @Transactional(readOnly = true)
     public Map<String, Set<String>> buildUndirected() {
-        Map<String, Set<String>> g = new HashMap<>();
-        for (EdgePair e : repo.fetchAllEdges()) {
-            g.computeIfAbsent(e.getU(), k -> new HashSet<>()).add(e.getV());
-            g.computeIfAbsent(e.getV(), k -> new HashSet<>()).add(e.getU());
+        Map<String, Set<String>> graph = new HashMap<>();
+        
+        try {
+            List<EdgeDTO> edges = repo.findAllEdges();
+            
+            for (EdgeDTO edge : edges) {
+                String source = edge.getSource();
+                String target = edge.getTarget();
+                
+                graph.computeIfAbsent(source, k -> new HashSet<>()).add(target);
+                graph.computeIfAbsent(target, k -> new HashSet<>()).add(source);
+            }
+            
+            List<String> allIds = repo.findAllIds();
+            for (String id : allIds) {
+                graph.computeIfAbsent(id, k -> new HashSet<>());
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error construyendo grafo: " + e.getMessage(), e);
         }
-        // asegurar que existan todos los nodos como keys (aunque sin edges)
-        for (String id : repo.findAllIds()) g.computeIfAbsent(id, k -> new HashSet<>());
-        return g;
+        
+        return graph;
     }
 
-    @Transactional(readOnly = true)
     public Map<String, List<Edge>> buildWeightedAsOne() {
-        Map<String, List<Edge>> g = new HashMap<>();
-        for (EdgePair e : repo.fetchAllEdges()) {
-            g.computeIfAbsent(e.getU(), k -> new ArrayList<>()).add(new Edge(e.getV(), 1.0));
-            g.computeIfAbsent(e.getV(), k -> new ArrayList<>()).add(new Edge(e.getU(), 1.0));
+        Map<String, List<Edge>> graph = new HashMap<>();
+        
+        try {
+            List<EdgeDTO> edges = repo.findAllEdges();
+            
+            for (EdgeDTO edge : edges) {
+                String source = edge.getSource();
+                String target = edge.getTarget();
+                
+                graph.computeIfAbsent(source, k -> new ArrayList<>())
+                     .add(new Edge(target, 1.0));
+                graph.computeIfAbsent(target, k -> new ArrayList<>())
+                     .add(new Edge(source, 1.0));
+            }
+            
+            List<String> allIds = repo.findAllIds();
+            for (String id : allIds) {
+                graph.computeIfAbsent(id, k -> new ArrayList<>());
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error construyendo grafo ponderado: " + e.getMessage(), e);
         }
-        for (String id : repo.findAllIds()) g.computeIfAbsent(id, k -> new ArrayList<>());
-        return g;
+        
+        return graph;
     }
-
-    public record Edge(String to, double w) {}
 }
