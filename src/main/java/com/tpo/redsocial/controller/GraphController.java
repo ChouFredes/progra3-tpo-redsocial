@@ -1,18 +1,35 @@
 // src/main/java/com/tpo/redsocial/api/GraphController.java
 package com.tpo.redsocial.controller;
 
-import com.tpo.redsocial.service.GraphService;
-import com.tpo.redsocial.algorithms.*;
-import com.tpo.redsocial.model.Edge;
-import com.tpo.redsocial.repo.PersonRepository;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tpo.redsocial.algorithms.Backtracking;
+import com.tpo.redsocial.algorithms.BfsDfs;
+import com.tpo.redsocial.algorithms.DivideAndConquerSorts;
+import com.tpo.redsocial.algorithms.GreedyRecommendations;
+import com.tpo.redsocial.algorithms.ShortestAndMst;
+import com.tpo.redsocial.model.Edge;
+import com.tpo.redsocial.repo.PersonRepository;
+import com.tpo.redsocial.service.GraphService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/graph")
@@ -290,15 +307,17 @@ public class GraphController {
 
     // Divide & vencerás (sorts de ejemplo)
     @PostMapping("/sort/quick")
-    public double[] quick(@RequestBody double[] arr){
-        var a=Arrays.copyOf(arr, arr.length);
-        DivideAndConquerSorts.quickSort(a,0,a.length-1);
-        return a;
+    public double[] quick(@RequestBody double[] arr) {
+        double[] copy = Arrays.copyOf(arr, arr.length);
+        DivideAndConquerSorts.quickSort(copy);
+        return copy;
     }
+
     @PostMapping("/sort/merge")
-    public double[] merge(@RequestBody double[] arr){
+    public double[] merge(@RequestBody double[] arr) {
         return DivideAndConquerSorts.mergeSort(arr);
     }
+
 /*
     // Programación dinámica (Floyd)
     @GetMapping("/fw")
@@ -308,10 +327,10 @@ public class GraphController {
         return Map.of("nodes", fw.nodes(), "dist", fw.dist());
     } */
 
-    // Backtracking (k-clique)
+    // Backtracking
     @GetMapping("/clique")
     public Object clique(@RequestParam int k){
-        return KCliqueBacktracking.findKClique(gs.buildUndirected(), k).orElseGet(Set::of);
+        return Backtracking.findKClique(gs.buildUndirected(), k).orElseGet(Set::of);
     }
 
     /*
