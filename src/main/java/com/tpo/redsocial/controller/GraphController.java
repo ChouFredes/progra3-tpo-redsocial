@@ -1,5 +1,5 @@
 // src/main/java/com/tpo/redsocial/api/GraphController.java
-package com.tpo.redsocial.api;
+package com.tpo.redsocial.controller;
 
 import com.tpo.redsocial.service.GraphService;
 import com.tpo.redsocial.algorithms.*;
