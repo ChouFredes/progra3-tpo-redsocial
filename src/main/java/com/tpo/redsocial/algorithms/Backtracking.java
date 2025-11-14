@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-// Búsqueda de k-clique mediante backtracking con poda simple y ordenado por grado.
+// Búsqueda de k-clique o n-grupo mediante backtracking con poda simple y ordenado por grado.
 
-public class KCliqueBacktracking {
+public class Backtracking {
 
     public static Optional<Set<String>> findKClique(Map<String,Set<String>> und, int k) {
         if (k <= 0) return Optional.of(Set.of());       // k=0 consideramos clique vacía
