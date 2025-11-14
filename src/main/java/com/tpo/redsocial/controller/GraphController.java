@@ -330,6 +330,13 @@ public class GraphController {
         return out;
     }
 
+    @GetMapping("/fw")
+    public Map<String,Object> fw(){
+        var adj = gs.buildWeightedAsOne();
+        var fw  = FloydWarshall.solve(adj.keySet(), convertToFloyd(adj));
+        return Map.of("nodes", fw.nodes(), "dist", fw.dist());
+    }
+
     @GetMapping("/tsp")
     public ResponseEntity<?> tsp(
             @RequestParam String start,
