@@ -240,9 +240,52 @@ public class GraphController {
 
 
     // Greedy recomendaciones
-    @GetMapping("/recommend/{userId}")
-    public List<String> recommend(@PathVariable String userId, @RequestParam(defaultValue="5") int k){
-        return GreedyRecommendations.topKByMutuals(gs.buildUndirected(), userId, k);
+    @GetMapping("/recommend-greedy/{userId}")
+    public ResponseEntity<?> recommend(
+        @PathVariable String userId, 
+        @RequestParam(defaultValue = "5") int k) {
+        
+        try {
+            System.out.println("🎯 Solicitando recomendaciones para usuario: " + userId + ", k=" + k);
+            
+            Map<String, Set<String>> graph = gs.buildUndirected();
+            
+            if (!graph.containsKey(userId)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Usuario no encontrado",
+                    "requestedUserId", userId,
+                    "availableUsers", graph.keySet(),
+                    "usingNeo4j", true
+                ));
+            }
+            
+            List<String> recommendations = GreedyRecommendations.topKByMutuals(graph, userId, k);
+            
+            // Información adicional para debugging
+            Set<String> userFriends = graph.get(userId);
+            int totalPossibleRecommendations = graph.keySet().stream()
+                .filter(node -> !node.equals(userId) && !userFriends.contains(node))
+                .collect(Collectors.toSet())
+                .size();
+            
+            return ResponseEntity.ok(Map.of(
+                "userId", userId,
+                "recommendations", recommendations,
+                "totalRecommended", recommendations.size(),
+                "requestedK", k,
+                "userFriendsCount", userFriends.size(),
+                "totalPossibleRecommendations", totalPossibleRecommendations,
+                "usingNeo4j", true,
+                "status", "success"
+            ));
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en recomendaciones: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of(
+                "error", "Error en recomendaciones",
+                "message", e.getMessage()
+            ));
+        }
     }
 
     // Divide & vencerás (sorts de ejemplo)

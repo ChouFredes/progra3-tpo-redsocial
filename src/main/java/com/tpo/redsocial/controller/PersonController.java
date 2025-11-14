@@ -1,4 +1,4 @@
-package com.tpo.redsocial.api;
+package com.tpo.redsocial.controller;
 
 import java.util.List;
 
