@@ -28,6 +28,7 @@ Cómo ejecutar el proyecto
 
 3. Acceder desde el navegador:
    - Aplicación: http://localhost:8080
+   - Swagger UI: http://localhost:8080/swagger-ui/index.html#/
    - Neo4j Browser: http://localhost:7474
    - Usuario: neo4j
    - Contraseña: 12345678
