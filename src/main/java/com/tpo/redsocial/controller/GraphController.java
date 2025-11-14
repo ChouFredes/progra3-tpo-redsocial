@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tpo.redsocial.algorithms.Backtracking;
 import com.tpo.redsocial.algorithms.BfsDfs;
 import com.tpo.redsocial.algorithms.DivideAndConquerSorts;
+import com.tpo.redsocial.algorithms.FloydWarshall;
 import com.tpo.redsocial.algorithms.GreedyRecommendations;
 import com.tpo.redsocial.algorithms.ShortestAndMst;
 import com.tpo.redsocial.model.Edge;
@@ -318,14 +319,14 @@ public class GraphController {
         return DivideAndConquerSorts.mergeSort(arr);
     }
 
-/*
+
     // Programación dinámica (Floyd)
     @GetMapping("/fw")
     public Map<String,Object> fw(){
         var adj = gs.buildWeightedAsOne();
         var fw  = FloydWarshall.solve(adj.keySet(), convertToFloyd(adj));
         return Map.of("nodes", fw.nodes(), "dist", fw.dist());
-    } */
+    }
 
     // Backtracking
     @GetMapping("/clique")
@@ -348,14 +349,21 @@ public class GraphController {
         src.forEach((k,v)-> out.put(k, v.stream().map(e->new ShortestAndMst.Edge(e.to(), e.w())).toList()));
         return out;
     }*/
-/*
+
     private static Map<String,List<FloydWarshall.Edge>> convertToFloyd(
-            Map<String,List<com.tpo.redsocial.service.GraphService.Edge>> src){
+            Map<String,List<com.tpo.redsocial.model.Edge>> src) {
+        
         Map<String,List<FloydWarshall.Edge>> out = new HashMap<>();
-        src.forEach((k,v) -> out.put(k, v.stream()
-            .map(e -> new FloydWarshall.Edge(e.to(), e.w()))
-            .toList()));
+        
+        src.forEach((k, v) -> 
+            out.put(
+                k, 
+                v.stream()
+                    .map(e -> new FloydWarshall.Edge(e.to(), e.weight()))
+                    .toList()
+            )
+        );
+        
         return out;
-}
- */
+    }
 }
