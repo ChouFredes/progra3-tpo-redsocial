@@ -309,6 +309,43 @@ public class GraphController {
         return DivideAndConquerSorts.mergeSort(arr);
     }
 
+    @GetMapping("/sort/degrees/quick")
+    public ResponseEntity<?> sortDegreesQuick() {
+        Map<String, Set<String>> graph = gs.buildUndirected();
+
+        double[] degrees = graph.values().stream()
+                .mapToDouble(Set::size)
+                .toArray();
+
+        double[] sorted = Arrays.copyOf(degrees, degrees.length);
+        DivideAndConquerSorts.quickSort(sorted);
+
+        return ResponseEntity.ok(Map.of(
+                "description",
+                "Distribución de grados (cantidad de amigos por usuario) ordenada con QuickSort (Divide & Conquer)",
+                "totalNodes", sorted.length,
+                "originalDegrees", degrees,
+                "sortedDegrees", sorted));
+    }
+
+    @GetMapping("/sort/degrees/merge")
+    public ResponseEntity<?> sortDegreesMerge() {
+        Map<String, Set<String>> graph = gs.buildUndirected();
+
+        double[] degrees = graph.values().stream()
+                .mapToDouble(Set::size)
+                .toArray();
+
+        double[] sorted = DivideAndConquerSorts.mergeSort(degrees);
+
+        return ResponseEntity.ok(Map.of(
+                "description",
+                "Distribución de grados (cantidad de amigos por usuario) ordenada con MergeSort (Divide & Conquer)",
+                "totalNodes", sorted.length,
+                "originalDegrees", degrees,
+                "sortedDegrees", sorted));
+    }
+
     @GetMapping("/clique")
     public Object clique(@RequestParam int k) {
         return Backtracking.findKClique(gs.buildUndirected(), k).orElseGet(Set::of);
